@@ -14,11 +14,15 @@ UI_X :: 640
 grass: [GRID_WIDTH][GRID_HEIGHT]bool
 grass_age: [GRID_WIDTH][GRID_HEIGHT]f32
 cut_score := 0
-radius_cost := 100
 radius := 1
+cut_increment := 1
+swing_timer := f32(0.50)
+cut_interval := f32(1.0)
+
 Button :: struct {
 	rect: rl.Rectangle,
 	text: string,
+	cost:int,
 }
 
 main :: proc() {
@@ -26,16 +30,29 @@ main :: proc() {
 	defer rl.CloseWindow()
 	init_grass()
 
-	swing_timer := f32(0.25)
+
+
 
 	radius_button := Button {
 		rect = {650, 100, 130, 50},
 		text = "Radius +1",
+		cost = 100
 	}
+	value_button := Button{
+		rect = {650, 151, 130, 50},
+		text = "Value +1",
+		cost = 1000
+	}
+	speed_button := Button{
+		rect = {650,202,130,50},
+		text = "Speed -0.001",
+		cost = 10000
+	}
+
 
 	for !rl.WindowShouldClose() {
 		dt := rl.GetFrameTime()
-		swing_timer -= dt
+		swing_timer -= dt / cut_interval
 
 		rl.ClearBackground(rl.BLACK)
 		grow_grass(dt)
@@ -45,10 +62,24 @@ main :: proc() {
 		if rl.IsMouseButtonPressed(rl.MouseButton.LEFT) {
 			mouse := rl.GetMousePosition()
 			if rl.CheckCollisionPointRec(mouse, radius_button.rect) {
-				if cut_score >= radius_cost {
-					cut_score -= radius_cost
+				if cut_score >= radius_button.cost {
+					cut_score -= radius_button.cost
 					radius += 1
-					radius_cost *= 2
+					radius_button.cost *= 2
+				}
+			}
+			if rl.CheckCollisionPointRec(mouse, value_button.rect){
+				if cut_score >= value_button.cost{
+					cut_score -= value_button.cost
+					cut_increment += 1
+					value_button.cost *= 2
+				}
+			}
+			if rl.CheckCollisionPointRec(mouse, speed_button.rect){
+				if cut_score >= speed_button.cost{
+					cut_score -= speed_button.cost
+					cut_interval -= 0.001
+					speed_button.cost *= 2
 				}
 			}
 		}
@@ -64,6 +95,8 @@ main :: proc() {
 		draw_grid()
 		draw_ui()
 		draw_button(radius_button)
+		draw_button(value_button)
+		draw_button(speed_button)
 		draw_cursor(cx, cy, radius)
 
 		rl.EndDrawing()
@@ -74,12 +107,12 @@ draw_button :: proc(button: Button) {
 	mouse := rl.GetMousePosition()
 	hovered := rl.CheckCollisionPointRec(mouse, button.rect)
 	color := rl.DARKGRAY
-	if hovered {
+	if hovered && button.cost <= cut_score {
 		color = rl.GRAY
 	}
 
 	rl.DrawRectangleRec(button.rect, color)
-	button_string := fmt.tprintf("%s :\n %d", button.text, radius_cost)
+	button_string := fmt.tprintf("%s :\n %d", button.text, button.cost)
 	button_text := strings.clone_to_cstring(button_string)
 
 	rl.DrawText(
@@ -125,7 +158,7 @@ cut_grass :: proc(cx, cy, radius: int) -> int {
 				if grass[x][y] {
 					grass[x][y] = false
 					grass_age[x][y] = rand.float32_range(0, 4)
-					cut_count += 1
+					cut_count += cut_increment
 				}
 			}
 		}
