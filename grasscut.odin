@@ -22,7 +22,7 @@ cut_interval := f32(1.0)
 Button :: struct {
 	rect: rl.Rectangle,
 	text: string,
-	cost:int,
+	cost: int,
 }
 
 main :: proc() {
@@ -31,22 +31,20 @@ main :: proc() {
 	init_grass()
 
 
-
-
 	radius_button := Button {
 		rect = {650, 100, 130, 50},
 		text = "Radius +1",
-		cost = 100
+		cost = 100,
 	}
-	value_button := Button{
+	value_button := Button {
 		rect = {650, 151, 130, 50},
 		text = "Value +1",
-		cost = 1000
+		cost = 1000,
 	}
-	speed_button := Button{
-		rect = {650,202,130,50},
+	speed_button := Button {
+		rect = {650, 202, 130, 50},
 		text = "Speed -0.001",
-		cost = 10000
+		cost = 10000,
 	}
 
 
@@ -68,15 +66,15 @@ main :: proc() {
 					radius_button.cost *= 2
 				}
 			}
-			if rl.CheckCollisionPointRec(mouse, value_button.rect){
-				if cut_score >= value_button.cost{
+			if rl.CheckCollisionPointRec(mouse, value_button.rect) {
+				if cut_score >= value_button.cost {
 					cut_score -= value_button.cost
 					cut_increment += 1
 					value_button.cost *= 2
 				}
 			}
-			if rl.CheckCollisionPointRec(mouse, speed_button.rect){
-				if cut_score >= speed_button.cost{
+			if rl.CheckCollisionPointRec(mouse, speed_button.rect) {
+				if cut_score >= speed_button.cost {
 					cut_score -= speed_button.cost
 					cut_interval -= 0.001
 					speed_button.cost *= 2
@@ -125,13 +123,12 @@ draw_button :: proc(button: Button) {
 }
 
 draw_cursor :: proc(cx, cy, radius: int) {
-	draw_radius := f32(radius * CELL_WIDTH)
-	rl.DrawCircle(
-		i32(cx * CELL_WIDTH + CELL_WIDTH / 2),
-		i32(cy * CELL_HEIGHT + CELL_HEIGHT / 2),
-		draw_radius,
-		rl.ColorAlpha(rl.RED, 0.5),
-	)
+	center_x := f32(cx * CELL_WIDTH  + CELL_WIDTH/2)
+    center_y := f32(cy * CELL_HEIGHT + CELL_HEIGHT/2)
+    draw_r := f32(radius) * CELL_WIDTH
+
+	rl.DrawCircleLines(i32(center_x), i32(center_y), draw_r + 2, rl.YELLOW)
+	rl.DrawCircle(i32(center_x), i32(center_y), draw_r, rl.ColorAlpha(rl.RED, 0.3))
 }
 
 mouse_update :: proc() -> (int, int) {
